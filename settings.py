@@ -20,5 +20,13 @@ SET_MAX_CONN    = b'AT+CIPSERVERMAXCONN='   # <max con (0~4)> + EOL
 CONNECT         = b'AT+CWJAP_CUR='          # "SSID","PASS" + EOL
 START_SER       = b'AT+CIPSERVER=1,'        # <port> + EOL
 PING            = b'AT+PING='               # <IP or www> + EOL
-SSID            = b"HUAWEI-B525-2B90"
-PASS            = b'"4MDH8DA9F6T"'
+START_SOFT_AP   = b'AT+CWSAP_CUR='          # SoftAP mode - "SSID","PASS",<chl>,<ecn>,<max conn><ssid hidden> + EOL
+                                            #   <chl> : channel ID. With range of [0,13]>
+                                            #   <ecn> : encryption method:
+                                            #       • 0: OPEN
+                                            #       • 2: WPA_PSK
+                                            #       • 3: WPA2_PSK
+                                            #   <max conn> : maximum number of Stations to which WizFi360 SoftAP can be connected; within the range of [1, 4].
+                                            #   <ssid hidden>:
+                                            #       • 0: SSID is broadcasted. (factory default)
+                                            #       • 1: SSID is not broadcasted.

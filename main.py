@@ -1,5 +1,6 @@
 import serial
 from settings import *
+from SSIDPASS import *
 
 ser = serial.Serial('COM11', 115200)
 temp = ''
