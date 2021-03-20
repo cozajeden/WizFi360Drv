@@ -16,6 +16,8 @@ TEST            = b'AT'                 + EOL
 ACK             = b'OK'                 + EOL
 RESET           = b'AT+RST'             + EOL
 VERSION         = b'AT+GMR'             + EOL
+DISCONNECT_SOC  = b'AT+CIPCLOSE'        + EOL
+SOC_CLIENT      = b'AT+CIPSTART="TCP",' + EOL # "addres",<port>
 PREP_SEND_BUFF  = b'AT+CIPSENDBUF='         # Server mode - <client>,<number of bytes> + EOL
 SEND_BUFF       = b'AT+CIPSENDEX='          # Server mode - <client>,<number of bytes> + EOL
 SET_DATA_LEN    = b'AT+CIPSENDBUF='         # Client mode - <number of bytes> + EOL

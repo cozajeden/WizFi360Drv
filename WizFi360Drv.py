@@ -1,40 +1,37 @@
 import uasyncio as asyncio
-import select, gc
+import gc
 from machine import UART
 from time import sleep
 from settings import *
-from SSIDPASS import *
+
+
 
 class WizFi360Drv:
     def __init__(self, uart=None):
+        print(uart)
         if uart is not None:
             self.uart = uart
-            #self.init(uart)
-        self.poll = select.poll()
-        self.poll.register(uart, select.POLLIN)
         self.reset()
         self.version()
         print('[WizFi360Drv] Initialized')
-        #self.connect(SSID, PASS)
-        #self.update_firmware()
-        self.host('WizFi360', '12345678')
         
     def connect(self, SSID, PASS):
-        authStr = CONNECT+SSID+b','+PASS+EOL
+        print('[WIFI] Connectiog...')
+        authStr = CONNECT+'"{0}","{1}"'.format(SSID, PASS).encode()+EOL#CONNECT+SSID+b','+PASS+EOL
         self.write(STATION_MODE)
         self.read(19)
         if self.readline() != ACK:
-            raise OSError("[CONNECT] Can't set station mode.")
+            raise OSError("[WIFI] Can't set station mode.")
         self.write(DHCP_EN)
         self.read(21)
         if self.readline() != ACK:
-            raise OSError("[CONNECT] Enabling DHCP failed.")
+            raise OSError("[WIFI] Enabling DHCP failed.")
         self.write(authStr)
         self.read(31 + len(authStr))
         if self.readline() != ACK:
-            raise OSError("[CONNECT] Estabilishing a connection failed.")
+            raise OSError("[WIFI] Estabilishing a connection failed.")
         else:
-            print('[CONNECT] Connection estabilished.')
+            print('[WIFI] Connection estabilished.')
         
     def host(self, SSID, PASS, channel=5, encryption=3, maxCon=4, hidden=0):
         self.write(SOFT_AP_MODE)
@@ -70,8 +67,8 @@ class WizFi360Drv:
         print('[UPDATE] Finished')
             
     def clear_buffer(self):
-        while uart.any():
-            uart.read(1)
+        while self.uart.any():
+            self.uart.read(1)
             
     def version(self):
         self.write(VERSION)
@@ -105,35 +102,30 @@ class WizFi360Drv:
     def read(self, length):
         return self.uart.read(length)
         
-    async def sender(self):
+class WLAN(WizFi360Drv):
+    AP = 0
+    STA = 1
+        
+    def init(self, mode, auth, channel=5, encryption=3, maxCon=4, hidden=0):
+        if mode == self.STA:
+            self.connect(auth[0], auth[1])
+        elif mode == self.AP:
+            self.host(auth[0], auth[1], channel, encryption, maxCon, hidden)
+        else:
+            raise OSError('[WLAN] Unknown mode.')
+        
+    def socket_client
+        
+    async def sender(self, queue):
         swriter = asyncio.StreamWriter(self.uart, {})
         while True:
-            swriter.write('AT\r\n')
+            swriter.write(await queue.get())
             await swriter.drain()
-            await asyncio.sleep(2)
 
-    async def receiver(self):
+    async def reciver(self, queue):
         sreader = asyncio.StreamReader(self.uart)
         while True:
-            res = await sreader.readline()
-            print('Recieved', res)
-
-    async def _init(self):
-        asyncio.create_task(self.sender())
-        asyncio.create_task(self.receiver())
-        while True:
-            await asyncio.sleep(1)
-
-    def init(self, uart=None):
-        try:
-            if uart is not None:
-                self.uart = uart
-            asyncio.run(self._init())
-        except KeyboardInterrupt:
-            print('Interrupted')
-        finally:
-            asyncio.new_event_loop()
-            print('as_demos.auart.test() to run again.')
+            await queue.put(await sreader.readline())
 
 gc.collect()
 
