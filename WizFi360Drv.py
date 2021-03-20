@@ -16,22 +16,24 @@ class WizFi360Drv:
         print('[WizFi360Drv] Initialized')
         
     def connect(self, SSID, PASS):
-        print('[WIFI] Connectiog...')
-        authStr = CONNECT+'"{0}","{1}"'.format(SSID, PASS).encode()+EOL#CONNECT+SSID+b','+PASS+EOL
+        print('[WLAN] Connectiog...')
+        authStr = CONNECT+'"{0}","{1}"'.format(SSID, PASS).encode()+EOL
         self.write(STATION_MODE)
-        self.read(19)
+        self.read(len(STATION_MODE)+2)
         if self.readline() != ACK:
-            raise OSError("[WIFI] Can't set station mode.")
+            raise OSError("[WLAN] Can't set station mode.")
         self.write(DHCP_EN)
-        self.read(21)
+        self.read(len(DHCP_EN)+2)
         if self.readline() != ACK:
-            raise OSError("[WIFI] Enabling DHCP failed.")
+            raise OSError("[WLAN] Enabling DHCP failed.")
         self.write(authStr)
-        self.read(31 + len(authStr))
-        if self.readline() != ACK:
-            raise OSError("[WIFI] Estabilishing a connection failed.")
-        else:
-            print('[WIFI] Connection estabilished.')
+        while True:
+            rec = self.readline()
+            if rec == ACK:
+                print('[WLAN] Connection estabilished.')
+                return 'OK'
+            elif rec == ERROR:
+                print('[WLAN] Failed to connect.')
         
     def host(self, SSID, PASS, channel=5, encryption=3, maxCon=4, hidden=0):
         self.write(SOFT_AP_MODE)
@@ -101,6 +103,9 @@ class WizFi360Drv:
     
     def read(self, length):
         return self.uart.read(length)
+    
+    def any(self):
+        return self.uart.any()
         
 class WLAN(WizFi360Drv):
     AP = 0
@@ -114,18 +119,49 @@ class WLAN(WizFi360Drv):
         else:
             raise OSError('[WLAN] Unknown mode.')
         
-    def socket_client
+    def socket_connect(self, addr, port, recQueue, sndQueue):
+        self.senderQue = sndQueue
+        connectStr = SOC_CLIENT+'"{0}",{1}'.format(addr, port).encode()+EOL
+        self.write(connectStr)
+        self.read(len(connectStr))
+        if self.readline() != CONNECTED:
+            self.clear_buffer()
+            return 'ERROR'
+        self.readline()
+        self.client = True
+        asyncio.create_task(self.reciver(recQueue))
+        asyncio.create_task(self.sender(sndQueue))
+        return 'OK'
         
     async def sender(self, queue):
         swriter = asyncio.StreamWriter(self.uart, {})
-        while True:
-            swriter.write(await queue.get())
-            await swriter.drain()
+        if self.client:
+            while True:
+                msg = await queue.get()
+                if msg == CLOSED:
+                    print('[SOCKET] Connection lost.')
+                    self.client = False
+                    break
+                swriter.write(msg)
+                await swriter.drain()
+        else:
+            while True:
+                swriter.write(await queue.get())
+                await swriter.drain()
 
     async def reciver(self, queue):
         sreader = asyncio.StreamReader(self.uart)
-        while True:
-            await queue.put(await sreader.readline())
+        if self.client:
+            while True:
+                msg = await sreader.readline()
+                print(msg)
+                if msg == CLOSED:
+                    await self.senderQue.put(CLOSED)
+                    break
+                await queue.put(msg)
+        else:
+            while True:
+                await queue.put(await sreader.readline())
 
 gc.collect()
 

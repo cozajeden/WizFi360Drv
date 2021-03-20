@@ -18,8 +18,7 @@ def core1(sndQueue, recQueue):
     uart = UART(1)
     wifi = WLAN(uart)
     wifi.init(WLAN.STA, (SSID, PASS))
-    asyncio.create_task(wifi.reciver(recQueue))
-    asyncio.create_task(wifi.sender(sndQueue))
+    wifi.socket_connect('www.wp.pl', 443, recQueue, sndQueue)
 
 async def foo(x, queue):
     while True:

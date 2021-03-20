@@ -2,7 +2,7 @@ MAX_CONN        = 4
 EOL             = b'\r\n'
 STATION_MODE    = b'AT+CWMODE_CUR=1'    + EOL
 SOFT_AP_MODE    = b'AT+CWMODE_CUR=2'    + EOL
-UPDATE = b'AT+CIUPDATE'        + EOL
+UPDATE          = b'AT+CIUPDATE'        + EOL
 BOTH_MODE       = b'AT+CWMODE_CUR=3'    + EOL
 DHCP_EN         = b'AT+CWDHCP_CUR=1,1'  + EOL
 DHCP_SOFT_EN    = b'AT+CWDHCP_CUR=0,1'  + EOL
@@ -17,7 +17,7 @@ ACK             = b'OK'                 + EOL
 RESET           = b'AT+RST'             + EOL
 VERSION         = b'AT+GMR'             + EOL
 DISCONNECT_SOC  = b'AT+CIPCLOSE'        + EOL
-SOC_CLIENT      = b'AT+CIPSTART="TCP",' + EOL # "addres",<port>
+SOC_CLIENT      = b'AT+CIPSTART="TCP",'     # "addres",<port>
 PREP_SEND_BUFF  = b'AT+CIPSENDBUF='         # Server mode - <client>,<number of bytes> + EOL
 SEND_BUFF       = b'AT+CIPSENDEX='          # Server mode - <client>,<number of bytes> + EOL
 SET_DATA_LEN    = b'AT+CIPSENDBUF='         # Client mode - <number of bytes> + EOL
@@ -39,6 +39,8 @@ START_SOFT_AP   = b'AT+CWSAP_CUR='          # SoftAP mode - "SSID","PASS",<chl>,
 
 RESET_OK        = b'AT+RST\r\n\r\nOK\r\n\xfc\r\nready\r\n'
 ERROR           = b'ERROR\r\n'
+CONNECTED         = b'CONNECT\r\n'
+CLOSED          = b'CLOSED\r\n'
 UPDATE_OK       = [
     b'+CIPUPDATE:1\r\n',
     b'+CIPUPDATE:2\r\n',
