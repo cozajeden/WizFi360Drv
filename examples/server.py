@@ -1,8 +1,7 @@
 import _thread as thread, uasyncio as asyncio
 from uasyncio import Event, Lock
-from WizFi360 import WLAN
+from socket import Socket, Queue
 from machine import UART
-from queue import Queue
 from SSIDPASS import *
 
 
@@ -12,13 +11,15 @@ async def schedule(callback, time, *args, **kwargs):
     callback(*args, **kwargs)
     
 def print_response(msg):
-    print(msg.decode())
+    print(msg)
 
 def core1(sndQueue, recQueue):
     uart = UART(1)
-    wifi = WLAN(uart)
-    wifi.init(WLAN.STA, (SSID, PASS))
-    wifi.socket_connect('www.wp.pl', 443, recQueue, sndQueue)
+    wifi = Socket(uart)
+    wifi.init(Socket.STA, (SSID, PASS))
+    wifi.listen(3000)
+    asyncio.create_task(reciver(uart, recQueue))
+    asyncio.create_task(sender(uart, sndQueue))
 
 async def foo(x, queue):
     while True:
@@ -28,8 +29,23 @@ async def foo(x, queue):
 async def bar(queue):
     while True:
         msg = await queue.get()
+        if msg is None:
+            break
         asyncio.create_task(schedule(print_response, 0, msg))
-    
+        
+
+        
+async def sender(uart, queue):
+    swriter = asyncio.StreamWriter(uart, {})
+    while True:
+        swriter.write(await queue.get())
+        await swriter.drain()
+
+async def reciver(uart, queue):
+    sreader = asyncio.StreamReader(uart)
+    while True:
+        await queue.put(await sreader.readline())
+
     
 async def main0():
     recQueue = Queue()

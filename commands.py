@@ -39,7 +39,7 @@ START_SOFT_AP   = b'AT+CWSAP_CUR='          # SoftAP mode - "SSID","PASS",<chl>,
 
 RESET_OK        = b'AT+RST\r\n\r\nOK\r\n\xfc\r\nready\r\n'
 ERROR           = b'ERROR\r\n'
-CONNECTED         = b'CONNECT\r\n'
+CONNECTED       = b'CONNECT\r\n'
 CLOSED          = b'CLOSED\r\n'
 UPDATE_OK       = [
     b'+CIPUPDATE:1\r\n',
