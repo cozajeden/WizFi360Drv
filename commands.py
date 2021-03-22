@@ -11,6 +11,7 @@ MUL_CONN_EN     = b'AT+CIPMUX=1'        + EOL
 MUL_CONN_DA     = b'AT+CIPMUX=0'        + EOL
 STOP_SER        = b'AT+CIPSERVER=0'     + EOL
 STATUS          = b'AT+CIPSTA_CUR?'     + EOL
+SER_STATUS      = b'AT+CIPSTATUS'       + EOL
 SEARCH          = b'AT+CWLAP'           + EOL
 TEST            = b'AT'                 + EOL
 ACK             = b'OK'                 + EOL
